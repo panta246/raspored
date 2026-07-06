@@ -8,7 +8,9 @@ vještinama, radnim nalozima, statistikom i PDF izvozom.
 
 ## Šta aplikacija radi
 
-- **Radnici** — dodavanje/izmjena/brisanje, svrstavanje u jednu od 4 grupe (crvena, zelena, plava, ljubičasta).
+- **Radnici** — dodavanje/izmjena/brisanje, svrstavanje u jednu od 4 grupe (crvena, zelena, plava, ljubičasta)
+  i označavanje pola (muški/ženski), radi lakšeg praćenja koliko je kog pola u firmi (i za buduću
+  mogućnost drugačijeg rasporeda/poslova po polu).
 - **Rotacija smjena** — svaki radnik ide: **PRVA → DRUGA → ODMOR → ODMOR** (ciklus 4 dana).
   Grupe su fazno pomjerene pa svaki dan jedna grupa radi prvu, jedna drugu, dvije odmaraju.
 - **Lokacije** — neograničen broj; za svaku se bira **minimum i maksimum** radnika i opcionalno
@@ -92,8 +94,10 @@ Windows računaru, mac na macOS-u itd.
 
 1. **Vještine** — provjerite/uredite listu osobina (već su ubačene tipične).
 2. **Lokacije** — postavite lokacije, min/max i tražene vještine (već postoji 5 primjera).
-3. **Radnici** — dodajte ljude i rasporedite ih u 4 grupe. Za ravnomjernu pokrivenost neka grupe budu
-   približno jednake (npr. ~17–18 po grupi za 70 ljudi).
+3. **Radnici** — pri prvom pokretanju aplikacija automatski ubaci 70 placeholder radnika
+   ("Radnik 01"–"Radnik 70"), ravnomjerno raspoređenih u 4 grupe (~17–18 po grupi) i po polu
+   (35 muških, 35 ženskih). Preimenujte ih u stvarna imena, ispravite pol/grupu/vještine po
+   potrebi, ili obrišite/dodajte radnike ako vam ih treba više ili manje.
 4. **Raspored** → **Generiši 28 dana**.
 5. Po potrebi ručno doradite dane, dodajte radne naloge, izvezite **PDF**.
 

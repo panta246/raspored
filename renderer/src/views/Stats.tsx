@@ -19,6 +19,8 @@ export default function StatsView() {
   }, []);
 
   const totalAssign = Object.values(counts).reduce((a, c) => a + Object.values(c).reduce((x, y) => x + y, 0), 0);
+  const maleCount = workers.filter((w) => w.sex === 'M').length;
+  const femaleCount = workers.filter((w) => w.sex === 'Z').length;
 
   return (
     <div>
@@ -28,7 +30,7 @@ export default function StatsView() {
       </div>
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-3 mb-5">
-        {[['Radnika', workers.length], ['Lokacija', locations.length], ['Ukupno postavki', totalAssign]].map(([lab, n]) => (
+        {[['Radnika', workers.length], ['Muškaraca', maleCount], ['Žena', femaleCount], ['Lokacija', locations.length], ['Ukupno postavki', totalAssign]].map(([lab, n]) => (
           <div key={lab} className="card px-4 py-3.5">
             <div className="text-2xl font-bold tabular-nums">{n as number}</div>
             <div className="text-xs text-mut mt-0.5">{lab as string}</div>

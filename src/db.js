@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS workers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   grp TEXT NOT NULL DEFAULT 'crvena',
+  sex TEXT NOT NULL DEFAULT 'M',
   active INTEGER NOT NULL DEFAULT 1,
   status TEXT NOT NULL DEFAULT 'aktivan',
   status_from TEXT,
@@ -51,11 +52,18 @@ async function init(filePath) {
     db = new SQL.Database();
   }
   db.run(SCHEMA);
+  migrate();
   // Podrazumijevani PIN i anchor ako ne postoje
   if (!getSetting('anchor')) setSetting('anchor', isoToday());
   seedDefaultsIfEmpty();
   save();
   return true;
+}
+
+// Doda kolone koje ne postoje u starijim bazama (napravljenim prije nego što su dodane)
+function migrate() {
+  const cols = all("PRAGMA table_info(workers)").map(c => c.name);
+  if (!cols.includes('sex')) db.run("ALTER TABLE workers ADD COLUMN sex TEXT NOT NULL DEFAULT 'M'");
 }
 
 function isoToday() {
@@ -149,6 +157,20 @@ function seedDefaultsIfEmpty() {
     const defs = [['Lokacija 1', 3, 8, 1], ['Lokacija 2', 2, 6, 2], ['Lokacija 3', 1, 4, 3], ['Lokacija 4', 1, 4, 4], ['Lokacija 5', 1, 4, 5]];
     defs.forEach(d => db.run('INSERT INTO locations(name,minp,maxp,ord) VALUES(?,?,?,?)', d));
   }
+  const wc = all('SELECT COUNT(*) c FROM workers')[0].c;
+  if (wc === 0) seedWorkers(70);
+}
+
+// Ubaci N placeholder radnika, ravnomjerno raspoređenih po 4 grupe i po polu (M/Z),
+// da bi aplikacija imala radnu postavu od prvog pokretanja (imena/pol se poslije uređuju).
+function seedWorkers(count) {
+  const groups = ['crvena', 'zelena', 'plava', 'ljubicasta'];
+  for (let i = 1; i <= count; i++) {
+    const name = `Radnik ${String(i).padStart(2, '0')}`;
+    const grp = groups[(i - 1) % groups.length];
+    const sex = i % 2 === 0 ? 'Z' : 'M';
+    db.run('INSERT INTO workers(name,grp,sex,active,status) VALUES(?,?,?,1,\'aktivan\')', [name, grp, sex]);
+  }
 }
 
 // --- skills ---
@@ -166,22 +188,22 @@ function getWorkers() {
   const ws = all('SELECT * FROM workers ORDER BY name');
   const links = all('SELECT * FROM worker_skills');
   return ws.map(w => ({
-    id: w.id, name: w.name, group: w.grp, active: w.active === 1,
+    id: w.id, name: w.name, group: w.grp, sex: w.sex || 'M', active: w.active === 1,
     status: w.status, statusFrom: w.status_from, statusTo: w.status_to,
     skills: links.filter(l => l.worker_id === w.id).map(l => l.skill_id)
   }));
 }
 function addWorker(w) {
-  run('INSERT INTO workers(name,grp,active,status,status_from,status_to) VALUES(?,?,?,?,?,?)',
-    [w.name, w.group || 'crvena', w.active === false ? 0 : 1, w.status || 'aktivan', w.statusFrom || null, w.statusTo || null]);
+  run('INSERT INTO workers(name,grp,sex,active,status,status_from,status_to) VALUES(?,?,?,?,?,?,?)',
+    [w.name, w.group || 'crvena', w.sex || 'M', w.active === false ? 0 : 1, w.status || 'aktivan', w.statusFrom || null, w.statusTo || null]);
   const id = lastId();
   (w.skills || []).forEach(sid => db.run('INSERT INTO worker_skills(worker_id,skill_id) VALUES(?,?)', [id, sid]));
   save();
   return id;
 }
 function updateWorker(w) {
-  run('UPDATE workers SET name=?,grp=?,active=?,status=?,status_from=?,status_to=? WHERE id=?',
-    [w.name, w.group, w.active === false ? 0 : 1, w.status || 'aktivan', w.statusFrom || null, w.statusTo || null, w.id]);
+  run('UPDATE workers SET name=?,grp=?,sex=?,active=?,status=?,status_from=?,status_to=? WHERE id=?',
+    [w.name, w.group, w.sex || 'M', w.active === false ? 0 : 1, w.status || 'aktivan', w.statusFrom || null, w.statusTo || null, w.id]);
   run('DELETE FROM worker_skills WHERE worker_id=?', [w.id]);
   (w.skills || []).forEach(sid => db.run('INSERT INTO worker_skills(worker_id,skill_id) VALUES(?,?)', [w.id, sid]));
   save();

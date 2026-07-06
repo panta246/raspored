@@ -32,6 +32,7 @@ async function createWindow() {
   win = new BrowserWindow({
     width: 1320, height: 880, minWidth: 1000, minHeight: 640,
     title: 'Raspored radnika',
+    icon: path.join(__dirname, 'build', 'icon.png'),
     backgroundColor: '#0f1115',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

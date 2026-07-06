@@ -1,6 +1,7 @@
 export type GroupColor = 'crvena' | 'zelena' | 'plava' | 'ljubicasta';
 export type Shift = 'PRVA' | 'DRUGA';
 export type WorkerStatus = 'aktivan' | 'bolovanje' | 'odmor';
+export type Sex = 'M' | 'Z';
 
 export interface Skill {
   id: number;
@@ -11,6 +12,7 @@ export interface Worker {
   id: number;
   name: string;
   group: GroupColor;
+  sex: Sex;
   active: boolean;
   status: WorkerStatus;
   statusFrom: string | null;
@@ -53,6 +55,9 @@ export interface GenerateResult {
 }
 
 export interface Api {
+  app: {
+    version: () => Promise<string>;
+  };
   auth: {
     check: (pin: string) => Promise<{ ok: boolean; firstRun?: boolean; viaRecovery?: boolean }>;
     setPin: (pin: string) => Promise<boolean>;

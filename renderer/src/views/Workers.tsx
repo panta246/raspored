@@ -3,11 +3,13 @@ import { api } from '../api';
 import { useData } from '../components/store';
 import { useUI, ModalHeader, ModalBody, ModalFooter, Field } from '../components/ui';
 import { GROUPS } from '../lib/schedule';
-import type { Worker, GroupColor, WorkerStatus } from '../types';
+import type { Worker, GroupColor, WorkerStatus, Sex } from '../types';
 
 const groupDot: Record<GroupColor, string> = {
   crvena: 'bg-crvena', zelena: 'bg-zelena', plava: 'bg-plava', ljubicasta: 'bg-ljubicasta',
 };
+
+const sexLabel: Record<Sex, string> = { M: 'Muški', Z: 'Ženski' };
 
 function statusBadge(w: Worker) {
   if (w.status === 'aktivan') return <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#16331f] text-[#5fd699] border border-[#245236]">aktivan</span>;
@@ -30,6 +32,8 @@ export default function WorkersView() {
   };
 
   const counts = GROUPS.map((g) => workers.filter((w) => w.group === g).length);
+  const maleCount = workers.filter((w) => w.sex === 'M').length;
+  const femaleCount = workers.filter((w) => w.sex === 'Z').length;
 
   return (
     <div>
@@ -38,6 +42,7 @@ export default function WorkersView() {
           <div className="text-2xl font-bold tracking-tight">Radnici</div>
           <div className="text-mut text-sm mt-1">
             Ukupno {workers.length} • po grupama: {GROUPS.map((g, i) => `${g} ${counts[i]}`).join(' · ')}
+            {' '}• muški {maleCount} · ženski {femaleCount}
           </div>
         </div>
         <button className="btn btn-primary" onClick={() => openForm(null)}>+ Novi radnik</button>
@@ -48,6 +53,7 @@ export default function WorkersView() {
           <thead>
             <tr className="text-left text-[11px] uppercase tracking-wider text-mut2">
               <th className="px-3.5 py-3 border-b border-bd font-semibold">Ime</th>
+              <th className="px-3.5 py-3 border-b border-bd font-semibold">Pol</th>
               <th className="px-3.5 py-3 border-b border-bd font-semibold">Grupa</th>
               <th className="px-3.5 py-3 border-b border-bd font-semibold">Status</th>
               <th className="px-3.5 py-3 border-b border-bd font-semibold">Vještine</th>
@@ -56,11 +62,12 @@ export default function WorkersView() {
           </thead>
           <tbody>
             {workers.length === 0 && (
-              <tr><td colSpan={5} className="px-3.5 py-12 text-center text-mut">Nema radnika. Dodajte prvog.</td></tr>
+              <tr><td colSpan={6} className="px-3.5 py-12 text-center text-mut">Nema radnika. Dodajte prvog.</td></tr>
             )}
             {workers.map((w) => (
               <tr key={w.id} className="hover:bg-panel2">
                 <td className="px-3.5 py-3 border-b border-bd"><b>{w.name}</b></td>
+                <td className="px-3.5 py-3 border-b border-bd">{sexLabel[w.sex]}</td>
                 <td className="px-3.5 py-3 border-b border-bd">
                   <span className="chip"><span className={`dot ${groupDot[w.group]}`} />{w.group}</span>
                 </td>
@@ -94,6 +101,7 @@ function WorkerForm({ worker, skills, onSaved, onCancel }: {
 }) {
   const isNew = !worker;
   const [name, setName] = useState(worker?.name ?? '');
+  const [sex, setSex] = useState<Sex>(worker?.sex ?? 'M');
   const [group, setGroup] = useState<GroupColor>(worker?.group ?? 'crvena');
   const [status, setStatus] = useState<WorkerStatus>(worker?.status ?? 'aktivan');
   const [from, setFrom] = useState(worker?.statusFrom ?? '');
@@ -105,7 +113,7 @@ function WorkerForm({ worker, skills, onSaved, onCancel }: {
   const save = async () => {
     if (!name.trim()) return;
     const data: Partial<Worker> = {
-      id: worker?.id, name: name.trim(), group, status,
+      id: worker?.id, name: name.trim(), sex, group, status,
       statusFrom: from || null, statusTo: to || null, skills: sel, active: true,
     };
     if (isNew) await api.workers.add(data); else await api.workers.update(data);
@@ -118,6 +126,16 @@ function WorkerForm({ worker, skills, onSaved, onCancel }: {
       <ModalBody>
         <Field label="Ime i prezime">
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+        </Field>
+        <Field label="Pol">
+          <div className="flex gap-2">
+            {(['M', 'Z'] as Sex[]).map((s) => (
+              <button key={s} onClick={() => setSex(s)}
+                className={`px-3 py-2 rounded-lg border text-sm ${sex === s ? 'border-acc bg-panel3' : 'border-bd2 bg-panel2'}`}>
+                {sexLabel[s]}
+              </button>
+            ))}
+          </div>
         </Field>
         <Field label="Grupa (boja rotacije)">
           <div className="flex gap-2 flex-wrap">

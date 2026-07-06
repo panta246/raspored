@@ -43,7 +43,8 @@
     "publish": {
       "provider": "github",
       "owner": "panta246",
-      "repo": "raspored"
+      "repo": "raspored",
+      "releaseType": "release"
     },
     "files": [
       "main.js",

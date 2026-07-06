@@ -1,10 +1,29 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { autoUpdater } = require('electron-updater');
 const db = require('./src/db');
 const S = require('./src/scheduler');
 
 let win;
+
+function initAutoUpdate() {
+  autoUpdater.autoDownload = true;
+  autoUpdater.on('update-downloaded', (info) => {
+    dialog.showMessageBox(win, {
+      type: 'info',
+      title: 'Dostupno je ažuriranje',
+      message: `Preuzeta je nova verzija (${info.version}). Restartovati aplikaciju sada da bi se instalirala?`,
+      buttons: ['Restartuj sada', 'Kasnije'],
+      defaultId: 0,
+      cancelId: 1,
+    }).then((res) => {
+      if (res.response === 0) autoUpdater.quitAndInstall();
+    });
+  });
+  autoUpdater.on('error', (err) => console.error('AutoUpdater error:', err));
+  autoUpdater.checkForUpdates();
+}
 
 async function createWindow() {
   const dbFile = path.join(app.getPath('userData'), 'raspored.sqlite');
@@ -32,7 +51,10 @@ async function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  if (app.isPackaged) initAutoUpdate();
+});
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 

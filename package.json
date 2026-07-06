@@ -1,6 +1,6 @@
 {
   "name": "raspored-radnika",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Desktop aplikacija za raspoređivanje radnika po smjenama (12h) i lokacijama.",
   "main": "main.js",
   "author": "",

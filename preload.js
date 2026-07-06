@@ -1,6 +1,9 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
+  app: {
+    version: () => ipcRenderer.invoke('app:version'),
+  },
   auth: {
     check: (pin) => ipcRenderer.invoke('auth:check', pin),
     setPin: (pin) => ipcRenderer.invoke('auth:setPin', pin),

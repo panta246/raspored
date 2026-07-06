@@ -11,6 +11,7 @@ export default function SettingsView() {
   const [pin, setPin] = useState('');
   const [anchor, setAnchor] = useState(isoToday());
   const [recovery, setRecovery] = useState<{ total: number; remaining: number }>({ total: 0, remaining: 0 });
+  const [version, setVersion] = useState('');
 
   const loadRecovery = async () => setRecovery(await api.auth.recoveryStatus());
 
@@ -19,6 +20,7 @@ export default function SettingsView() {
       setHasPin(await api.auth.hasPin());
       setAnchor((await api.settings.get('anchor')) || isoToday());
       await loadRecovery();
+      setVersion(await api.app.version());
     })();
   }, []);
 
@@ -88,6 +90,8 @@ export default function SettingsView() {
             jedna grupa radi prvu, jedna drugu, dvije odmaraju. Bolovanje/odmor radnika ga automatski izuzima iz tih dana.
           </div>
         </Field>
+
+        <div className="text-xs text-mut2">Verzija aplikacije: {version || '...'}</div>
       </div>
     </div>
   );

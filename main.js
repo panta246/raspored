@@ -61,6 +61,8 @@ app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) creat
 // Da greske u main procesu ne ostanu nevidljive
 process.on('uncaughtException', (e) => { console.error('MAIN ERROR:', e); });
 
+ipcMain.handle('app:version', () => app.getVersion());
+
 // ---------- auth / settings ----------
 ipcMain.handle('auth:check', (e, pin) => {
   const stored = db.getSetting('pin');
